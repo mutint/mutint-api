@@ -166,7 +166,8 @@ def experiment_payload(experiment):
         "project_id": experiment.project_id,
         "name": experiment.name,
         "notes": experiment.notes or "",
-        "doi": experiment.doi or "",
+        "publications": [{"title": pub.title, "url": pub.url}
+                         for pub in experiment.publication_set.order_by("id")],
         "created": experiment.date.isoformat() if experiment.date else None,
         "locked": experiment.locked_at is not None,
         "ancestor_sample_id": experiment.ancestor_id,
