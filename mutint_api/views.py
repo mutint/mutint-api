@@ -47,7 +47,7 @@ from mutint_import.gd_import import export_gd_text
 from mutint_import.vcf_export import export_vcf_text
 from mutint_sample import ncbi
 from mutint_sample.models import MutationCall, Sample
-from mutint_sample.util import get_mutation_call_queryset, get_ordered_reseq_queryset
+from mutint_sample.util import get_mutation_call_queryset, get_ordered_sample_queryset
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +118,7 @@ def _experiment(pk):
 def _samples(experiment):
     # The ancestor too: a pull wants the whole record, and the experiment payload says
     # which sample the ancestor is.
-    return get_ordered_reseq_queryset(experiment.id, include_ancestor=True)
+    return get_ordered_sample_queryset(experiment.id, include_ancestor=True)
 
 
 def _sample(pk):
