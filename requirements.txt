@@ -1,0 +1,6 @@
+# Install mutint-core dependencies first:
+#   pip install -r mutint-core/requirements.txt
+#
+# mutint-api-specific additions (if any):
+#
+# There are none. The API is Django views over core's models and writers.

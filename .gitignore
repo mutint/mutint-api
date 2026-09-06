@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+
+# Django
+*.sqlite3
+local_settings.py
+# Anchored, unlike the copy of this file in the other plugin repos. `static/` unanchored also
+# matches `mutint_needle/static/`, which is where this component's vendored assets live -- and
+# `git add` skipping them is silent, so the plot would simply not draw in a fresh clone. Only
+# a STATIC_ROOT at the repo root is ignored here.
+/static/
+media/
+*.log
+
+# Distribution / packaging
+# Anchored for the same reason as `/static/` above, and this one had actually caught
+# something: the vendored library ships its compiled files in `muts-needle-plot/build/`, and
+# an unanchored `build/` ignores them.
+/dist/
+/build/
+*.egg-info/
+
+# Environment / secrets
+.env
+.env.*
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
