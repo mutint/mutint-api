@@ -12,6 +12,7 @@ import json
 import shutil
 import tempfile
 
+from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 
 from mutint_experiment.models import Experiment, Project
@@ -33,6 +34,7 @@ SNP\t1\t.\ttest_ref\t100\tA\tgene_name=thrA\tgene_product=aspartokinase\tfrequen
 
 class _Fixture(TestCase):
     def setUp(self):
+        User.objects.create(username="tester", email="t@e.com", is_active=True, is_staff=True)
         self.store = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, self.store, True)
         patcher = override_settings(MUTINT_STORE_DIR=self.store)
