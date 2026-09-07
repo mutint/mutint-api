@@ -22,11 +22,12 @@ class ApiConfig(AppConfig):
         from django.urls import include, re_path
         from mutint_common.about_registry import register_about_section
         from mutint_common.plugin_registry import register_plugin_urlpatterns
+        from mutint_api.version import __version__
 
         # No nav entry: the API is for programs, and the About section is where a person
         # reading the site learns it exists.
         register_plugin_urlpatterns([
             re_path(r'^api/', include('mutint_api.urls')),
         ])
-        register_about_section(self, name='mutint-api',
+        register_about_section(self, name='mutint-api', version=__version__,
                                template='about/sections/mutint_api.html')
