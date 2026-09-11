@@ -124,11 +124,37 @@ class ExperimentsTestCase(_Fixture):
         status, body = self.get("/api/samples/%d/" % self.samples[0].id)
         self.assertEqual(200, status)
         for key in ("source_name", "population", "time_point", "name", "sample_type",
-                    "breseq", "sequencing", "curation", "gd_url", "vcf_url"):
+                    "breseq", "sequencing", "curation", "inputs", "gd_url", "vcf_url"):
             self.assertIn(key, body)
         self.assertEqual("clonal", body["sample_type"])
         self.assertNotIn("url", body)
         self.assertNotIn("aledb.org", json.dumps(body))
+
+    def test_a_sample_publishes_what_it_was_made_from(self):
+        """The half of the SRA story that makes a pulled sample reproducible: a consumer can
+        see what a public sample was built from, not only what it was called."""
+        from mutint_sample import inputs
+
+        sample = self.samples[0]
+        inputs.record_inputs(sample, [
+            inputs.Input(inputs.KIND_READS, "a_R1.fastq.gz", 1, 1),
+            inputs.Input(inputs.KIND_READS, "a_R2.fastq.gz", 1, 2),
+        ])
+
+        _status, body = self.get("/api/samples/%d/" % sample.id)
+
+        self.assertEqual(["a_R1.fastq.gz", "a_R2.fastq.gz"],
+                         [entry["value"] for entry in body["inputs"]])
+        self.assertEqual([1, 1], [entry["group"] for entry in body["inputs"]])
+
+    def test_what_an_imported_sample_publishes_is_what_the_importer_recorded(self):
+        """The fixture builds its samples through the real breseq-folder importer, so this is
+        core's own record travelling out rather than something the test planted."""
+        body = self.get("/api/samples/%d/" % self.samples[1].id)[1]
+
+        self.assertEqual([{"kind": "folder", "value": self.samples[1].source_name,
+                           "group": 0, "mate": None}],
+                         body["inputs"])
 
     def test_the_ancestor_is_listed_and_named(self):
         self.experiment.set_ancestor(self.samples[0])

@@ -211,6 +211,10 @@ def sample_payload(sample):
         "breseq": dict(sample.breseq),
         "sequencing": dict(sample.sequencing),
         "curation": dict(sample.curation),
+        # What the sample was made from -- read files, an SRA accession, the `.gd` or folder
+        # it was imported from -- with mates sharing a `group`. Empty for anything imported
+        # before core started recording it, which is not backfilled.
+        "inputs": list(sample.inputs),
         "bam_stored": sample.bam_stored,
         "coverage_stored": sample.coverage_stored,
         "report_stored": sample.report_stored,
