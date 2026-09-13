@@ -175,6 +175,7 @@ def experiment_payload(experiment):
         "samples_url": reverse("api_experiment_samples", args=[experiment.id]),
         "mutations_url": reverse("api_experiment_mutations", args=[experiment.id]),
         "reference_url": reverse("api_experiment_reference", args=[experiment.id]),
+        "archive_url": reverse("api_experiment_archive", args=[experiment.id]),
     }
 
 
@@ -388,10 +389,28 @@ def sample_gd(request, pk):
 
 @api
 def sample_vcf(request, pk):
-    """The sample's mutations as VCF -- core's `vcf_export`, byte-for-byte for a call that
-    arrived as VCF and regenerated from the reference otherwise."""
+    """The sample's mutations as VCF -- core's `vcf_export`: the file the sample arrived as,
+    byte for byte, or one generated from its mutations for a sample that came from a `.gd`,
+    whose header counts the mutations VCF cannot spell."""
     sample = _sample(pk)
     return _file(export_vcf_text(sample), "%s.vcf" % (sample.source_name or sample.id))
+
+
+@api
+def experiment_archive(request, pk):
+    """The whole experiment as a MutInt archive: reference, every sample's mutations and
+    the experiment's details in one zip, which the MutInt Archive tab of another MutInt
+    reads back. See `mutint_import.archive`. Absent for an experiment with no reference,
+    since every mutation in it is defined against one."""
+    from mutint_import import archive
+
+    experiment = _experiment(pk)
+    try:
+        payload = archive.archive_bytes(experiment)
+    except archive.ArchiveError:
+        raise Http404("experiment %s has no reference genome to export" % pk)
+    return _file(payload, archive.archive_filename(experiment),
+                 content_type="application/zip")
 
 
 def _strip_html(text):

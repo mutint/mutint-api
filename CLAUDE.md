@@ -30,6 +30,16 @@ the record whole, ancestor included, with `ancestor_sample_id` beside it. `mutat
 is a question across experiments and subtracts designated ancestry the way Search does.
 The docs say so; a caller who wants the other behaviour has the other endpoint.
 
+**`experiments/<id>/archive` is the pull.** It serves core's MutInt archive
+(`mutint_import.archive.archive_bytes`), the same zip **Export experiment** offers a reader,
+so an instance pulling a public experiment gets the reference, every sample's mutations and
+the experiment's details in one request and imports them on one tab; the per-sample `.gd`
+and VCF routes stay for a script that wants one piece. The 404 posture is the same as
+everywhere here: a private experiment's archive is absent, and so is one for an experiment
+with no reference, which has nothing to export the mutations against. `samples/<id>/vcf` answers for
+every sample: the file it arrived as, or one core generates from the mutations, whose header
+counts what VCF cannot spell -- see **Reading VCF** in `mutint-core/CLAUDE.md`.
+
 **GET only, and the `api_` prefix on route names.** Core has `reference_view`, `sample_bam`
 and the like; a plugin's route names must not shadow a page's.
 

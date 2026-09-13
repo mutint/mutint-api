@@ -239,6 +239,38 @@ class FilesTestCase(_Fixture):
         self.assertIn("SNP", text)
         self.assertIn("\t100\t", text)
 
+    def test_a_sample_that_came_from_no_vcf_gets_a_generated_one(self):
+        response = self.client.get("/api/samples/%d/vcf" % self.samples[0].id)
+        self.assertEqual(200, response.status_code)
+        text = response.content.decode()
+        self.assertTrue(text.startswith("##fileformat=VCFv4.2\n##source=MutInt "))
+        self.assertIn("##contig=<ID=test_ref,", text)
+        self.assertIn("\t100\t", text)
+
+    def test_the_archive_is_the_whole_experiment_as_a_zip(self):
+        import io
+        import zipfile
+
+        status, body = self.get("/api/experiments/%d/" % self.experiment.id)
+        self.assertEqual("/api/experiments/%d/archive" % self.experiment.id, body["archive_url"])
+
+        response = self.client.get(body["archive_url"])
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("application/zip", response["Content-Type"])
+        self.assertEqual('attachment; filename="pub.zip"', response["Content-Disposition"])
+        with zipfile.ZipFile(io.BytesIO(response.content)) as zipped:
+            names = zipped.namelist()
+            manifest = json.loads(zipped.read("pub/mutint.json").decode())
+        self.assertEqual("mutint-archive", manifest["format"])
+        self.assertEqual({"1-1-1-1", "1-2-1-1"},
+                         {entry["source_name"] for entry in manifest["samples"]})
+        self.assertIn("pub/reference/reference.fasta", names)
+        self.assertIn("pub/samples/1-1-1-1.gd", names)
+
+    def test_a_private_experiments_archive_is_absent(self):
+        self.assertEqual(404, self.client.get(
+            "/api/experiments/%d/archive" % self.private.id).status_code)
+
     def test_a_private_samples_files_are_absent(self):
         private = Sample.objects.filter(population__experiment=self.private).first()
         self.assertEqual(404, self.client.get("/api/samples/%d/gd" % private.id).status_code)

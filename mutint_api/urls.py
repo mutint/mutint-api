@@ -17,6 +17,8 @@ urlpatterns = [
             name='api_experiment_mutations'),
     re_path(r'^experiments/(?P<pk>\d+)/reference/$', views.experiment_reference,
             name='api_experiment_reference'),
+    re_path(r'^experiments/(?P<pk>\d+)/archive$', views.experiment_archive,
+            name='api_experiment_archive'),
     re_path(r'^samples/(?P<pk>\d+)/$', views.sample, name='api_sample'),
     re_path(r'^samples/(?P<pk>\d+)/gd$', views.sample_gd, name='api_sample_gd'),
     re_path(r'^samples/(?P<pk>\d+)/vcf$', views.sample_vcf, name='api_sample_vcf'),

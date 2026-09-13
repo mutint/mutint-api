@@ -43,13 +43,27 @@ answer to a different question.
 
 ## Pulling an experiment
 
+The whole experiment is one download, and it is the way to move one between MutInts:
+
 ```bash
 base=https://example.org/api
 curl -s $base/experiments/ | jq '.experiments[] | {id, name}'
+curl -s -o experiment.zip $base/experiments/7/archive
+```
+
+The zip is a MutInt archive -- the reference, every sample's mutations and the experiment's
+details -- and a local MutInt imports it on the **MutInt Archive** tab of an experiment's
+Import data page, or with `./mutint import experiment.zip --experiment-id <id>`. The
+experiment payload carries the address as `archive_url`. An experiment with no reference has
+no archive.
+
+The pieces are also available one at a time, for a script that wants only some of them:
+
+```bash
 curl -s $base/experiments/7/ | jq '.samples[] | {id, source_name}'
 curl -s -o 1-500-1-1.gd $base/samples/123/gd
 curl -s -o reference.fasta https://example.org/mutations/reference/7/fasta
 ```
 
-Name each `.gd` by the sample's `source_name` and the importer places it under the same
-population and time point.
+Each `.gd` and VCF carries the sample's placement in its header, so the importer puts it
+under the same population and time point whatever the file is called.
