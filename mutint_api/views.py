@@ -35,7 +35,8 @@ from django.http import Http404, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 
-from mutint_common.constants import SAMPLE_TYPE_CLONAL, SAMPLE_TYPE_MIXED
+from mutint_common.constants import (REQUEST_ALL, REQUEST_TREATMENT, SAMPLE_TYPE_CLONAL,
+                                    SAMPLE_TYPE_MIXED)
 from mutint_common.logger import user_extra
 from mutint_common.version import __version__
 from mutint_experiment import paths
@@ -200,6 +201,9 @@ def sample_payload(sample):
         "name": sample.name,
         "label": sample.label,
         "description": sample.description or "",
+        # The condition the sample was grown under, a free-text label; "" for none. The
+        # `metadata.csv` an importer places by carries the same column.
+        "treatment": sample.treatment or "",
         # The coordinate as it was imported (`A-F-I-R`), which is what a local instance
         # names the file it pulls, so the importer places it the same way.
         "source_name": sample.source_name or "",
@@ -331,8 +335,14 @@ def experiment(request, pk):
 @api
 def experiment_samples(request, pk):
     experiment = _experiment(pk)
+    samples = _samples(experiment)
+    # `?treatment=` narrows to the samples under one treatment, the page selectors' own
+    # parameter; anything else, or nothing, is every sample.
+    treatment = request.GET.get(REQUEST_TREATMENT)
+    if treatment and treatment != REQUEST_ALL:
+        samples = samples.filter(treatment=treatment)
     return JsonResponse({"samples": [
-        sample_payload(s) for s in _samples(experiment).select_related("population")]})
+        sample_payload(s) for s in samples.select_related("population")]})
 
 
 @api

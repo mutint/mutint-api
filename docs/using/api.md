@@ -18,7 +18,7 @@ Every endpoint answers JSON except the two file downloads. Errors answer JSON to
 | `GET /api/projects/<id>/` | one project and its experiments |
 | `GET /api/experiments/` | every public experiment |
 | `GET /api/experiments/<id>/` | one experiment, its populations and its samples |
-| `GET /api/experiments/<id>/samples/` | the samples alone |
+| `GET /api/experiments/<id>/samples/` | the samples alone; `?treatment=<label>` narrows to one treatment |
 | `GET /api/experiments/<id>/mutations/` | every mutation and every call in the experiment, matrix-shaped |
 | `GET /api/experiments/<id>/reference/` | the reference's contigs, and where the FASTA and GFF3 are served |
 | `GET /api/samples/<id>/` | one sample |

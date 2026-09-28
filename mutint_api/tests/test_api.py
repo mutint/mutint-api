@@ -124,11 +124,28 @@ class ExperimentsTestCase(_Fixture):
         status, body = self.get("/api/samples/%d/" % self.samples[0].id)
         self.assertEqual(200, status)
         for key in ("source_name", "population", "time_point", "name", "sample_type",
-                    "breseq", "sequencing", "curation", "inputs", "gd_url", "vcf_url"):
+                    "treatment", "breseq", "sequencing", "curation", "inputs", "gd_url",
+                    "vcf_url"):
             self.assertIn(key, body)
         self.assertEqual("clonal", body["sample_type"])
+        self.assertEqual("", body["treatment"])
         self.assertNotIn("url", body)
         self.assertNotIn("aledb.org", json.dumps(body))
+
+    def test_a_samples_treatment_is_published_and_narrows_the_list(self):
+        sample = self.samples[0]
+        sample.treatment = "glucose"
+        sample.save(update_fields=["treatment"])
+        experiment_id = sample.population.experiment_id
+        status, body = self.get("/api/samples/%d/" % sample.id)
+        self.assertEqual("glucose", body["treatment"])
+        status, body = self.get("/api/experiments/%d/samples/?treatment=glucose" % experiment_id)
+        self.assertEqual(200, status)
+        self.assertEqual([sample.id], [s["id"] for s in body["samples"]])
+        status, body = self.get("/api/experiments/%d/samples/?treatment=lactose" % experiment_id)
+        self.assertEqual([], body["samples"])
+        status, body = self.get("/api/experiments/%d/samples/" % experiment_id)
+        self.assertGreater(len(body["samples"]), 1)
 
     def test_a_sample_publishes_what_it_was_made_from(self):
         """The half of the SRA story that makes a pulled sample reproducible: a consumer can
